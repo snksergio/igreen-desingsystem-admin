@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+/*
+ * Diz pro Tailwind v4 escanear os bundles do DS dentro de node_modules.
+ * Sem isso, as classes utility usadas DENTRO dos componentes do package
+ * (gap-gp-md, rounded-radius-base, min-h-form-lg, etc.) não são geradas,
+ * porque por default o Tailwind ignora node_modules/.
+ */
+@source "../node_modules/@snksergio/design-system/dist-lib/**/*.{mjs,cjs,js}";
+
+@import "@snksergio/design-system/theme.css";
+
+html,
+body {
+  background: var(--color-bg-canvas);
+  color: var(--color-fg-default);
+  font-family: "Geist", system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+}

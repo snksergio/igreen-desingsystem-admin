@@ -1,0 +1,44 @@
+{
+  "name": "@snksergio/create-design-system",
+  "version": "0.1.0",
+  "description": "Bootstrap projects consuming @snksergio/design-system — React 19 + Vite + Tailwind v4, pre-configured.",
+  "type": "module",
+  "bin": {
+    "create-snksergio-design-system": "bin/index.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "templates",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/snksergio/igreen-desingsystem-admin.git",
+    "directory": "cli"
+  },
+  "bugs": {
+    "url": "https://github.com/snksergio/igreen-desingsystem-admin/issues"
+  },
+  "homepage": "https://github.com/snksergio/igreen-desingsystem-admin#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "create",
+    "bootstrap",
+    "design-system",
+    "iGreen",
+    "react",
+    "vite",
+    "tailwindcss",
+    "template"
+  ],
+  "dependencies": {
+    "picocolors": "^1.1.0",
+    "prompts": "^2.4.2"
+  }
+}

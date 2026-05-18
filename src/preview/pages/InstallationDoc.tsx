@@ -2,6 +2,7 @@ import { DocLayout, DocHeader, DocSeparator, SectionH2 } from "../components";
 import { Badge } from "../../components/shadcn/badge";
 
 const TOC = [
+  { id: "quickstart", label: "Quick start (CLI)" },
   { id: "requirements", label: "Requirements" },
   { id: "clone", label: "Clone & Install" },
   { id: "scripts", label: "Scripts" },
@@ -39,8 +40,46 @@ export function InstallationDoc() {
       />
       <DocSeparator />
 
+      {/* Quick start with CLI */}
+      <SectionH2 id="quickstart" title="Quick start (CLI)" />
+      <div className="flex flex-col gap-gp-2xl mb-14">
+        <p className="text-paragraph-sm text-fg-muted">
+          Pra criar um projeto novo do zero já consumindo o DS, use o CLI{" "}
+          <code className="font-mono text-code-sm bg-bg-subtle px-pad-sm rounded-radius-sm">
+            @snksergio/create-design-system
+          </code>
+          . Vite + React 19 + Tailwind v4 + tema light/dark + exemplo funcional, tudo pré-configurado.
+        </p>
+        <CodeBlock>{`npm create @snksergio/design-system my-app
+cd my-app
+npm run dev
+# → http://localhost:3200`}</CodeBlock>
+        <p className="text-paragraph-sm text-fg-muted">
+          O CLI pergunta o nome do projeto, package manager, se quer instalar deps e iniciar git.
+          Em ~30 segundos você tem um app rodando com 4 componentes do DS demonstrados (Button, Chip,
+          Avatar/Badge, AlertModal) e toggle dark/light funcionando. Sem precisar configurar nada
+          manualmente, sem gotcha do <code className="font-mono text-code-sm">@source</code> do Tailwind v4.
+        </p>
+        <div className="rounded-radius-base border border-border-subtle bg-bg-subtle p-pad-3xl">
+          <p className="text-label-sm text-fg-default mb-gp-md">Variações de uso</p>
+          <CodeBlock>{`# Sem args (CLI faz prompts pra tudo)
+npm create @snksergio/design-system
+
+# Com pnpm ou yarn
+pnpm create @snksergio/design-system my-app
+yarn create @snksergio/design-system my-app
+
+# Versão específica do CLI
+npm create @snksergio/design-system@0.1.0 my-app`}</CodeBlock>
+        </div>
+        <p className="text-paragraph-sm text-fg-muted">
+          Se você prefere adicionar o DS num projeto JÁ existente, veja{" "}
+          <strong className="text-fg-default">Install via NPM</strong> mais abaixo.
+        </p>
+      </div>
+
       {/* Requirements */}
-      <SectionH2 id="requirements" title="Requirements" />
+      <SectionH2 id="requirements" title="Requirements (para desenvolver NO DS)" />
       <div className="flex flex-col gap-gp-2xl mb-14">
         <p className="text-paragraph-sm text-fg-muted">
           Minimum versions for the DS to build, generate tokens and run the preview app.

@@ -80,9 +80,25 @@ tokens/brands/default/
 
 ---
 
+## Quick start (CLI)
+
+Para criar um projeto novo do zero já consumindo o DS, com tudo configurado (Vite + React 19 + Tailwind v4 + tema light/dark + exemplo funcional):
+
+```bash
+npm create @snksergio/design-system my-app
+cd my-app
+npm run dev
+```
+
+O CLI pergunta o nome do projeto, package manager, se quer instalar deps e iniciar git. Em ~30 segundos você tem um app rodando em `http://localhost:3200` com 4 componentes do DS demonstrados. Sem precisar configurar nada manualmente, sem gotcha do `@source` do Tailwind v4.
+
+Ver detalhes: [`cli/README.md`](cli/README.md).
+
+---
+
 ## Install in external apps
 
-O DS é publicado como pacote NPM público (`@snksergio/design-system`). Apps externos consomem via:
+Se você prefere adicionar o DS num projeto JÁ existente (ao invés de usar o CLI), é publicado como pacote NPM público (`@snksergio/design-system`):
 
 ```bash
 npm install @snksergio/design-system

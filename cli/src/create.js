@@ -1,0 +1,245 @@
+/**
+ * @snksergio/create-design-system — CLI bootstrap
+ *
+ * Fluxo:
+ *   1. Parseia nome do projeto (arg) + ouve prompts pra campos faltantes
+ *   2. Valida diretório destino (vazio ou inexistente)
+ *   3. Copia templates/<choice>/ → destino
+ *   4. Substitui name no package.json pelo nome do projeto
+ *   5. Renomeia _gitignore → .gitignore
+ *   6. Roda <packageManager> install (opcional)
+ *   7. git init + commit inicial (opcional)
+ *   8. Print next steps
+ */
+
+import { fileURLToPath } from "node:url";
+import { dirname, join, resolve, basename } from "node:path";
+import {
+  existsSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+  mkdirSync,
+  cpSync,
+  renameSync,
+  statSync,
+} from "node:fs";
+import { spawn } from "node:child_process";
+import prompts from "prompts";
+import pc from "picocolors";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const CLI_ROOT = resolve(__dirname, "..");
+const TEMPLATES_DIR = join(CLI_ROOT, "templates");
+const DEFAULT_TEMPLATE = "default";
+
+/* ── helpers ─────────────────────────────────────────────────────── */
+
+function detectPackageManager() {
+  const ua = process.env.npm_config_user_agent || "";
+  if (ua.startsWith("pnpm")) return "pnpm";
+  if (ua.startsWith("yarn")) return "yarn";
+  if (ua.startsWith("bun")) return "bun";
+  return "npm";
+}
+
+function validateProjectName(name) {
+  if (!name) return "Project name is required";
+  if (!/^[a-z0-9-_]+$/i.test(name))
+    return "Use only letters, numbers, dashes and underscores";
+  return true;
+}
+
+function isDirectoryEmpty(dir) {
+  if (!existsSync(dir)) return true;
+  const items = readdirSync(dir).filter((f) => f !== ".git");
+  return items.length === 0;
+}
+
+function run(cmd, args, cwd) {
+  return new Promise((resolveRun, rejectRun) => {
+    const child = spawn(cmd, args, {
+      cwd,
+      stdio: "inherit",
+      shell: process.platform === "win32",
+    });
+    child.on("close", (code) => {
+      if (code === 0) resolveRun();
+      else rejectRun(new Error(`${cmd} ${args.join(" ")} exited with code ${code}`));
+    });
+  });
+}
+
+function listTemplates() {
+  if (!existsSync(TEMPLATES_DIR)) return [];
+  return readdirSync(TEMPLATES_DIR).filter((f) => {
+    const fullPath = join(TEMPLATES_DIR, f);
+    return statSync(fullPath).isDirectory();
+  });
+}
+
+/* ── main ────────────────────────────────────────────────────────── */
+
+async function main() {
+  console.log();
+  console.log(pc.green(pc.bold("◇ @snksergio/create-design-system")));
+  console.log(pc.dim("  Bootstrap a project consuming the iGreen Design System"));
+  console.log();
+
+  const argName = process.argv[2];
+  const defaultPm = detectPackageManager();
+  const availableTemplates = listTemplates();
+
+  if (availableTemplates.length === 0) {
+    console.log(pc.red("Error: no templates found in templates/ directory."));
+    process.exit(1);
+  }
+
+  // Step 1: collect answers
+  const answers = await prompts(
+    [
+      {
+        type: argName ? null : "text",
+        name: "projectName",
+        message: "Project name?",
+        initial: "my-app",
+        validate: validateProjectName,
+      },
+      {
+        type: availableTemplates.length > 1 ? "select" : null,
+        name: "template",
+        message: "Template?",
+        choices: availableTemplates.map((t) => ({ title: t, value: t })),
+        initial: 0,
+      },
+      {
+        type: "select",
+        name: "packageManager",
+        message: "Package manager?",
+        choices: [
+          { title: "npm", value: "npm" },
+          { title: "pnpm", value: "pnpm" },
+          { title: "yarn", value: "yarn" },
+          { title: "bun", value: "bun" },
+        ],
+        initial: ["npm", "pnpm", "yarn", "bun"].indexOf(defaultPm),
+      },
+      {
+        type: "confirm",
+        name: "installDeps",
+        message: "Install dependencies now?",
+        initial: true,
+      },
+      {
+        type: "confirm",
+        name: "initGit",
+        message: "Initialize a git repository?",
+        initial: true,
+      },
+    ],
+    {
+      onCancel: () => {
+        console.log();
+        console.log(pc.yellow("✗ Cancelled."));
+        process.exit(0);
+      },
+    }
+  );
+
+  const projectName = argName || answers.projectName;
+  const template = answers.template || DEFAULT_TEMPLATE;
+  const { packageManager, installDeps, initGit } = answers;
+
+  // Step 2: validate destination
+  const projectDir = resolve(process.cwd(), projectName);
+  if (existsSync(projectDir) && !isDirectoryEmpty(projectDir)) {
+    console.log();
+    console.log(pc.red(`✗ Directory "${projectName}" already exists and is not empty.`));
+    process.exit(1);
+  }
+
+  // Step 3: copy template
+  const templateDir = join(TEMPLATES_DIR, template);
+  if (!existsSync(templateDir)) {
+    console.log(pc.red(`✗ Template "${template}" not found in ${TEMPLATES_DIR}`));
+    process.exit(1);
+  }
+
+  mkdirSync(projectDir, { recursive: true });
+  console.log();
+  console.log(pc.cyan(`→ Copying template "${template}"…`));
+  cpSync(templateDir, projectDir, { recursive: true });
+
+  // Step 4: substitute project name in package.json
+  const pkgPath = join(projectDir, "package.json");
+  if (existsSync(pkgPath)) {
+    const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
+    pkg.name = projectName;
+    writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n", "utf8");
+  }
+
+  // Step 5: rename _gitignore → .gitignore
+  const gitignoreSrc = join(projectDir, "_gitignore");
+  const gitignoreDst = join(projectDir, ".gitignore");
+  if (existsSync(gitignoreSrc)) {
+    renameSync(gitignoreSrc, gitignoreDst);
+  }
+
+  // Step 6: install deps
+  if (installDeps) {
+    console.log(pc.cyan(`→ Installing dependencies with ${packageManager}…`));
+    try {
+      await run(packageManager, ["install"], projectDir);
+    } catch (err) {
+      console.log();
+      console.log(pc.yellow(`⚠ Failed to install dependencies: ${err.message}`));
+      console.log(pc.dim(`  You can run "${packageManager} install" manually later.`));
+    }
+  }
+
+  // Step 7: git init + initial commit
+  if (initGit) {
+    console.log(pc.cyan("→ Initializing git repository…"));
+    try {
+      await run("git", ["init"], projectDir);
+      await run("git", ["add", "."], projectDir);
+      await run(
+        "git",
+        ["commit", "-m", "chore: initial commit from create-snksergio-design-system"],
+        projectDir
+      );
+    } catch (err) {
+      console.log();
+      console.log(pc.yellow(`⚠ Failed to initialize git: ${err.message}`));
+      console.log(pc.dim("  You can run \"git init\" manually later."));
+    }
+  }
+
+  // Step 8: print next steps
+  const runCmd =
+    packageManager === "npm" ? "npm run dev" : `${packageManager} dev`;
+
+  console.log();
+  console.log(pc.green(pc.bold("✨ Done!")));
+  console.log();
+  console.log(pc.bold("Next steps:"));
+  console.log();
+  if (resolve(process.cwd()) !== projectDir) {
+    console.log(pc.cyan(`  cd ${basename(projectDir)}`));
+  }
+  if (!installDeps) {
+    console.log(pc.cyan(`  ${packageManager} install`));
+  }
+  console.log(pc.cyan(`  ${runCmd}`));
+  console.log();
+  console.log(pc.dim("Preview will open at http://localhost:3200"));
+  console.log();
+}
+
+main().catch((err) => {
+  console.log();
+  console.log(pc.red(`✗ Unexpected error: ${err.message}`));
+  if (process.env.DEBUG) console.error(err);
+  process.exit(1);
+});
