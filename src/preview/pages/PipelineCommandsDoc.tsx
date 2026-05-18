@@ -81,6 +81,7 @@ export function PipelineCommandsDoc() {
           <p className="ml-sp-md">ds-add-shadcn.md           <span className="text-fg-subtle">← /ds-add-shadcn &lt;name&gt;</span></p>
           <p className="ml-sp-md">ds-add-token.md            <span className="text-fg-subtle">← /ds-add-token &lt;name&gt;</span></p>
           <p className="ml-sp-md">ds-extract-figma.md        <span className="text-fg-subtle">← /ds-extract-figma &lt;url&gt;</span></p>
+          <p className="ml-sp-md">ds-update.md               <span className="text-fg-subtle">← /ds-update [tag]</span></p>
         </div>
       </div>
 
@@ -116,6 +117,12 @@ export function PipelineCommandsDoc() {
           desc="Extrai tokens ou componentes de um arquivo Figma e produz spec para revisão."
           agent="Designer → [GATE]"
           skill="figma-extract"
+        />
+        <CmdCard
+          cmd="/ds-update [tag]"
+          desc="Lê git log desde a última entry, classifica as mudanças e propõe uma ReleaseEntry para a timeline Updates. Gate de revisão antes de gravar."
+          agent="Dev → [GATE preview]"
+          skill="update-changelog"
         />
       </div>
 

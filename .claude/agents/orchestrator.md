@@ -46,6 +46,7 @@ A tarefa solicitada já foi concluída antes (CONCLUÍDO/APROVADO)?
 10. **Extração Figma** → `/ds-extract-figma` → `ds-designer` → **[GATE]** → `ds-dev`
 11. **Token novo** → `/ds-add-token` → `ds-designer` → **[GATE]** → `ds-dev` → `ds-reviewer`
 12. **Adapter / transform** → `ds-dev`
+13. **Atualizar Updates timeline** → `/ds-update` → `ds-dev` (skill `update-changelog`) → **[GATE preview]** → apply
 
 ### Tabela completa de roteamento DS
 
@@ -62,6 +63,7 @@ A tarefa solicitada já foi concluída antes (CONCLUÍDO/APROVADO)?
 | Editar visual existente | — | `ds-dev` → `ds-reviewer` |
 | Extração Figma | `/ds-extract-figma` | `ds-designer` → **[GATE]** → `ds-dev` |
 | Adapter / transform | — | `ds-dev` |
+| Atualizar Updates timeline | `/ds-update` | `ds-dev` (skill `update-changelog`) → **[GATE preview]** → apply |
 
 ---
 

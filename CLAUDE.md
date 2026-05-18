@@ -151,6 +151,7 @@ TIER 2.5 — Component tokens
 | Editar visual existente | `[nome].styles.ts` APENAS | `ds-dev/impl-igreen.md` |
 | Revisar token | — | `ds-reviewer/SKILL.md` |
 | Revisar componente | — | `ds-reviewer/review-component.md` |
+| Atualizar Updates timeline | `src/preview/pages/updates-data.ts` | `ds-dev/update-changelog.md` |
 
 ---
 

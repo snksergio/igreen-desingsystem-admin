@@ -127,6 +127,7 @@ export function PipelineSkillsDoc() {
         <SkillRow path="impl-igreen" agent="DS Dev" desc="Implement iGreen component with tv(): styles + tsx + types + USAGE.md" />
         <SkillRow path="impl-shadcn" agent="DS Dev" desc="Add/adapt Shadcn component with DS tokens" />
         <SkillRow path="impl-composite" agent="DS Dev" desc="Implement composite component (multiple sub-components with shared tv())" />
+        <SkillRow path="update-changelog" agent="DS Dev" desc="Read git log + project state, classify changes, propose ReleaseEntry for the Updates timeline" tag="Gate" />
         <SkillRow path="SKILL (token review)" agent="DS Reviewer" desc="Token review checklist (7 items) + critique" />
         <SkillRow path="review-component" agent="DS Reviewer" desc="Component review: regression sweep + 3 checklists + genuine critique" tag="Gate" />
       </div>
