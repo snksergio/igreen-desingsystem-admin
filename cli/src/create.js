@@ -24,7 +24,7 @@ import {
   renameSync,
   statSync,
 } from "node:fs";
-import { spawn } from "node:child_process";
+import spawn from "cross-spawn";
 import prompts from "prompts";
 import pc from "picocolors";
 
@@ -58,25 +58,19 @@ function isDirectoryEmpty(dir) {
 }
 
 /**
- * Spawn cross-platform robusto.
+ * Spawn cross-platform via cross-spawn — resolve issue do Node.js no
+ * Windows que rejeita .cmd/.bat com `spawn EINVAL` desde a mitigação
+ * do CVE-2024-27980. cross-spawn lida com:
+ *   - Resolução de .cmd/.bat no Windows
+ *   - Escape correto de argumentos com espaços
+ *   - Não precisa shell:true (que tem própria CVE)
  *
- * Windows quirks:
- *   - Package managers (npm/pnpm/yarn/bun) são .cmd files: append `.cmd`
- *     ao nome e usar shell: false. (shell: true quebra argumentos com
- *     espaços, ex: "chore: initial commit" virava 4 args separados.)
- *   - git.exe é executável direto, não precisa de .cmd nem shell.
+ * Args com espaços (ex: commit messages) são tratados corretamente sem
+ * quebrar em multiple args.
  */
 function run(cmd, args, cwd) {
   return new Promise((resolveRun, rejectRun) => {
-    const isWindows = process.platform === "win32";
-    const isPackageManager = ["npm", "pnpm", "yarn", "bun"].includes(cmd);
-    const finalCmd = isWindows && isPackageManager ? `${cmd}.cmd` : cmd;
-
-    const child = spawn(finalCmd, args, {
-      cwd,
-      stdio: "inherit",
-      shell: false,
-    });
+    const child = spawn(cmd, args, { cwd, stdio: "inherit" });
     child.on("close", (code) => {
       if (code === 0) resolveRun();
       else rejectRun(new Error(`${cmd} ${args.join(" ")} exited with code ${code}`));
