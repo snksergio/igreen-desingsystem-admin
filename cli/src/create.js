@@ -20,7 +20,7 @@ import {
   readFileSync,
   writeFileSync,
   mkdirSync,
-  cpSync,
+  copyFileSync,
   renameSync,
   statSync,
 } from "node:fs";
@@ -57,18 +57,48 @@ function isDirectoryEmpty(dir) {
   return items.length === 0;
 }
 
+/**
+ * Spawn cross-platform robusto.
+ *
+ * Windows quirks:
+ *   - Package managers (npm/pnpm/yarn/bun) são .cmd files: append `.cmd`
+ *     ao nome e usar shell: false. (shell: true quebra argumentos com
+ *     espaços, ex: "chore: initial commit" virava 4 args separados.)
+ *   - git.exe é executável direto, não precisa de .cmd nem shell.
+ */
 function run(cmd, args, cwd) {
   return new Promise((resolveRun, rejectRun) => {
-    const child = spawn(cmd, args, {
+    const isWindows = process.platform === "win32";
+    const isPackageManager = ["npm", "pnpm", "yarn", "bun"].includes(cmd);
+    const finalCmd = isWindows && isPackageManager ? `${cmd}.cmd` : cmd;
+
+    const child = spawn(finalCmd, args, {
       cwd,
       stdio: "inherit",
-      shell: process.platform === "win32",
+      shell: false,
     });
     child.on("close", (code) => {
       if (code === 0) resolveRun();
       else rejectRun(new Error(`${cmd} ${args.join(" ")} exited with code ${code}`));
     });
+    child.on("error", (err) => rejectRun(err));
   });
+}
+
+/**
+ * Recursive copy manual — robusto a paths com Unicode/espaços no Windows.
+ * (fs.cpSync no Windows falha silenciosamente em paths como "Área de Trabalho/")
+ */
+function copyRecursive(src, dst) {
+  const stat = statSync(src);
+  if (stat.isDirectory()) {
+    mkdirSync(dst, { recursive: true });
+    for (const entry of readdirSync(src)) {
+      copyRecursive(join(src, entry), join(dst, entry));
+    }
+  } else {
+    copyFileSync(src, dst);
+  }
 }
 
 function listTemplates() {
@@ -169,7 +199,7 @@ async function main() {
   mkdirSync(projectDir, { recursive: true });
   console.log();
   console.log(pc.cyan(`→ Copying template "${template}"…`));
-  cpSync(templateDir, projectDir, { recursive: true });
+  copyRecursive(templateDir, projectDir);
 
   // Step 4: substitute project name in package.json
   const pkgPath = join(projectDir, "package.json");
