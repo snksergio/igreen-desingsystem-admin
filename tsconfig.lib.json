@@ -1,0 +1,36 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "outDir": "./dist-lib/types",
+    "rootDir": ".",
+    "noEmit": false,
+    "skipLibCheck": true,
+    "types": ["vite/client", "node"]
+  },
+  "include": [
+    "src/components/**/*",
+    "src/utils/**/*",
+    "src/hooks/**/*",
+    "src/lib/**/*",
+    "src/preview/pages/ChatV2/**/*",
+    "src/preview/pages/ClientesShowcase/**/*",
+    "src/preview/pages/DashboardShowcase.tsx",
+    "src/preview/mocks/**/*",
+    "tokens/index.ts",
+    "tokens/brands/**/*"
+  ],
+  "exclude": [
+    "**/*.test.{ts,tsx}",
+    "src/preview/pages/*Doc.tsx",
+    "src/preview/components/**",
+    "src/App.tsx",
+    "src/main.tsx",
+    "tokens/transforms/**",
+    "node_modules",
+    "dist",
+    "dist-lib"
+  ]
+}

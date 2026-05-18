@@ -1,8 +1,19 @@
 {
-  "name": "@igreen/design-system",
+  "name": "@snksergio/design-system",
   "version": "0.1.0",
-  "description": "iGreen Design System — token-first, stack-agnostic",
+  "description": "iGreen Design System — internal library for SaaS CRM, admin panels and dashboards. React 19 + Tailwind v4 + Shadcn + Radix.",
   "type": "module",
+  "main": "./dist-lib/index.cjs",
+  "module": "./dist-lib/index.mjs",
+  "types": "./dist-lib/index.d.ts",
+  "files": [
+    "dist-lib/index.*",
+    "dist-lib/tokens.*",
+    "dist-lib/theme.css",
+    "dist-lib/preview/**",
+    "dist-lib/chunks/**",
+    "README.md"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/snksergio/igreen-desingsystem-admin.git"
@@ -12,16 +23,50 @@
   },
   "homepage": "https://github.com/snksergio/igreen-desingsystem-admin#readme",
   "exports": {
-    "./theme.css": "./src/styles/theme/tailwind-theme.css",
-    "./tokens": "./tokens/brands/default/index.ts",
-    "./transforms/tailwind": "./tokens/transforms/to-tailwind-v4.ts",
-    "./transforms/css": "./tokens/transforms/to-css-vars.ts",
-    "./transforms/dtcg": "./tokens/transforms/to-dtcg.ts"
+    ".": {
+      "types": "./dist-lib/index.d.ts",
+      "import": "./dist-lib/index.mjs",
+      "require": "./dist-lib/index.cjs"
+    },
+    "./theme.css": "./dist-lib/theme.css",
+    "./tokens": {
+      "types": "./dist-lib/tokens.d.ts",
+      "import": "./dist-lib/tokens.mjs",
+      "require": "./dist-lib/tokens.cjs"
+    },
+    "./preview/chat": {
+      "types": "./dist-lib/preview/chat.d.ts",
+      "import": "./dist-lib/preview/chat.mjs",
+      "require": "./dist-lib/preview/chat.cjs"
+    },
+    "./preview/clientes": {
+      "types": "./dist-lib/preview/clientes.d.ts",
+      "import": "./dist-lib/preview/clientes.mjs",
+      "require": "./dist-lib/preview/clientes.cjs"
+    },
+    "./preview/dashboard": {
+      "types": "./dist-lib/preview/dashboard.d.ts",
+      "import": "./dist-lib/preview/dashboard.mjs",
+      "require": "./dist-lib/preview/dashboard.cjs"
+    },
+    "./preview/mocks": {
+      "types": "./dist-lib/preview/mocks.d.ts",
+      "import": "./dist-lib/preview/mocks.mjs",
+      "require": "./dist-lib/preview/mocks.cjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "dev": "npm run tokens:tw4 && vite",
     "build": "npm run tokens:tw4 && tsc -b && vite build",
+    "build:lib": "npm run tokens:tw4 && vite build --config vite.lib.config.ts",
     "preview": "vite preview",
+    "prepublishOnly": "npm run build:lib",
+    "release:patch": "npm version patch && npm publish",
+    "release:minor": "npm version minor && npm publish",
+    "release:major": "npm version major && npm publish",
     "tokens:tw4": "tsx tokens/transforms/to-tailwind-v4.ts > src/styles/theme/tailwind-theme.css",
     "tokens:css": "tsx tokens/transforms/to-css-vars.ts > dist/tokens.css",
     "tokens:dtcg": "tsx tokens/transforms/to-dtcg.ts > dist/tokens.tokens.json",
@@ -61,9 +106,7 @@
     "date-fns": "^4.1.0",
     "geist": "^1.7.0",
     "lucide-react": "^1.7.0",
-    "react": "^19.0.0",
     "react-day-picker": "^9.14.0",
-    "react-dom": "^19.0.0",
     "recharts": "^3.8.1",
     "tailwind-merge": "^3.0.0",
     "tailwind-variants": "^3.0.0",
@@ -83,14 +126,17 @@
     "tsx": "^4.19.0",
     "typescript": "^5.6.0",
     "vite": "^6.0.0",
+    "vite-plugin-dts": "^5.0.0",
     "vitest": "^4.1.6"
   },
   "peerDependencies": {
-    "tailwindcss": ">=4.0.0"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwindcss": "^4.0.0"
   },
   "peerDependenciesMeta": {
     "tailwindcss": {
-      "optional": true
+      "optional": false
     }
   }
 }

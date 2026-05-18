@@ -80,7 +80,45 @@ tokens/brands/default/
 
 ---
 
-## Setup
+## Install in external apps
+
+O DS é publicado como pacote NPM público (`@snksergio/design-system`). Apps externos consomem via:
+
+```bash
+npm install @snksergio/design-system
+```
+
+**Pre-requisitos no app consumidor:**
+- React 19+ (peer dep)
+- Tailwind CSS v4 instalado e configurado
+- Importar `@snksergio/design-system/theme.css` uma vez no entry CSS
+
+**Uso:**
+
+```tsx
+// app.tsx — entry CSS
+import "@snksergio/design-system/theme.css";
+
+// componentes
+import { Button, AppShell, DataTable } from "@snksergio/design-system";
+
+// tokens (acesso programático)
+import { colorLight, spacing } from "@snksergio/design-system/tokens";
+
+// showcases prontas (com mocks)
+import ChatV2 from "@snksergio/design-system/preview/chat";
+
+// mocks reutilizáveis
+import { APP_SHELL_CONTEXTS, chatMocks } from "@snksergio/design-system/preview/mocks";
+```
+
+**Modelo evergreen:** sem versionamento semver disciplinado. Apps usam `^0.1.0` no `package.json` e `npm update` puxa as últimas mudanças.
+
+**Sub-paths disponíveis:** `.`, `/theme.css`, `/tokens`, `/preview/chat`, `/preview/clientes`, `/preview/dashboard`, `/preview/mocks`.
+
+---
+
+## Setup (desenvolvimento no DS)
 
 Requisitos: Node 20+, npm 10+ (ou pnpm/yarn).
 

@@ -6,6 +6,7 @@ const TOC = [
   { id: "clone", label: "Clone & Install" },
   { id: "scripts", label: "Scripts" },
   { id: "first-run", label: "First Run" },
+  { id: "install-npm", label: "Install via NPM" },
   { id: "consume", label: "Consume in App" },
   { id: "pipeline", label: "AI Pipeline" },
   { id: "troubleshoot", label: "Troubleshooting" },
@@ -129,11 +130,76 @@ npm run dev
         </ol>
       </div>
 
-      {/* Consume in App */}
-      <SectionH2 id="consume" title="Consume in an External App" />
+      {/* Install via NPM */}
+      <SectionH2 id="install-npm" title="Install via NPM" />
       <div className="flex flex-col gap-gp-2xl mb-14">
         <p className="text-paragraph-sm text-fg-muted">
-          To use the DS in another app today, import the generated theme CSS directly. NPM package distribution is planned.
+          O DS é publicado como pacote público no NPM. Apps externos consomem via{" "}
+          <code className="font-mono text-code-sm bg-bg-subtle px-pad-sm rounded-radius-sm">npm install</code> — modelo
+          "evergreen": <code className="font-mono text-code-sm">npm update</code> sempre puxa a versão mais recente.
+        </p>
+        <p className="text-paragraph-sm text-fg-muted">
+          <strong className="text-fg-default">Pre-requisitos no app consumidor:</strong>
+        </p>
+        <ul className="list-disc pl-sp-md flex flex-col gap-gp-md text-paragraph-sm text-fg-muted">
+          <li>React 19+ (peer dep)</li>
+          <li>Tailwind CSS v4 instalado e configurado</li>
+          <li>Importar <code className="font-mono text-code-sm">@snksergio/design-system/theme.css</code> uma vez no entry CSS</li>
+        </ul>
+        <CodeBlock>{`# instala
+npm install @snksergio/design-system
+
+# atualiza pra última versão
+npm update @snksergio/design-system`}</CodeBlock>
+        <p className="text-paragraph-sm text-fg-muted">
+          Importar componentes, theme, tokens e showcases:
+        </p>
+        <CodeBlock>{`// app.tsx — entry CSS
+import "@snksergio/design-system/theme.css";
+
+// componentes
+import { Button, AppShell, Chip, DataTable } from "@snksergio/design-system";
+
+// tokens (acesso programático)
+import { colorLight, spacing } from "@snksergio/design-system/tokens";
+
+// showcases prontas (com mocks)
+import ChatV2 from "@snksergio/design-system/preview/chat";
+import ClientesShowcase from "@snksergio/design-system/preview/clientes";
+
+// mocks reutilizáveis
+import {
+  APP_SHELL_CONTEXTS,
+  chatMocks,
+  clientesMocks,
+} from "@snksergio/design-system/preview/mocks";`}</CodeBlock>
+        <div className="rounded-radius-base border border-border-subtle overflow-hidden">
+          <div className="grid grid-cols-[200px_1fr] gap-0 bg-bg-subtle border-b border-border-subtle">
+            <div className="py-pad-md px-pad-xl text-label-xs text-fg-default font-medium">Sub-path</div>
+            <div className="py-pad-md px-pad-xl text-label-xs text-fg-default font-medium">O que exporta</div>
+          </div>
+          {[
+            { path: ".", desc: "Componentes iGreen + Shadcn adaptados (Button, AppShell, DataTable, etc)" },
+            { path: "/theme.css", desc: "CSS gerado com @theme + dark mode + utility presets" },
+            { path: "/tokens", desc: "Objetos de tokens semânticos (colorLight, spacing, sizing, etc)" },
+            { path: "/preview/chat", desc: "ChatV2 showcase completa + types" },
+            { path: "/preview/clientes", desc: "ClientesShowcase (CRUD com DataTable + Drawer)" },
+            { path: "/preview/dashboard", desc: "DashboardShowcase com KPIs e charts" },
+            { path: "/preview/mocks", desc: "Mocks reutilizáveis: APP_SHELL_*, chatMocks, clientesMocks" },
+          ].map((row) => (
+            <div key={row.path} className="grid grid-cols-[200px_1fr] gap-0 border-t border-border-subtle">
+              <div className="py-pad-md px-pad-xl"><code className="font-mono text-code-sm text-fg-brand">{row.path}</code></div>
+              <div className="py-pad-md px-pad-xl text-paragraph-sm text-fg-muted">{row.desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Consume in App */}
+      <SectionH2 id="consume" title="Alternative: Consume Directly from Source" />
+      <div className="flex flex-col gap-gp-2xl mb-14">
+        <p className="text-paragraph-sm text-fg-muted">
+          Caso queira referenciar o DS direto desta pasta (dev local, sem publish), importe o tema CSS direto e use o repo como dependência local.
         </p>
         <CodeBlock>{`/* app.css in your project */
 @import "tailwindcss";
