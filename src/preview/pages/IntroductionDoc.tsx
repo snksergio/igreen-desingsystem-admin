@@ -16,7 +16,7 @@ export function IntroductionDoc() {
       <DocHeader
         category="Get Started"
         title="Introduction"
-        description="A token-first, stack-agnostic design system with an AI-assisted pipeline for the iGreen ecosystem."
+        description="Token-first design system for iGreen SaaS CRM, admin panels and dashboards — React + Tailwind v4 + Shadcn + AI pipeline."
       />
       <DocSeparator />
 
@@ -24,17 +24,18 @@ export function IntroductionDoc() {
       <SectionH2 id="what" title="What is iGreen DS" />
       <div className="flex flex-col gap-gp-2xl mb-14">
         <p className="text-paragraph-sm text-fg-muted">
-          iGreen Design System is the visual foundation for all iGreen products — from the consumer app to the
-          licensed partner portal. It provides a unified set of <strong className="text-fg-default">design tokens</strong>,{" "}
+          iGreen Design System is the internal library used by iGreen SaaS platforms — admin panels, CRM,
+          operational dashboards and licensing portals. It ships a unified set of{" "}
+          <strong className="text-fg-default">design tokens</strong>,{" "}
           <strong className="text-fg-default">UI components</strong>,{" "}
           <strong className="text-fg-default">documentation</strong>, and a{" "}
-          <strong className="text-fg-default">multi-agent AI pipeline</strong> that enforces consistency at every step.
+          <strong className="text-fg-default">multi-agent AI pipeline</strong> that enforces consistency at every change.
         </p>
         <p className="text-paragraph-sm text-fg-muted">
-          Unlike traditional component libraries that ship opinionated CSS, iGreen DS is built from
-          tokens up. Tokens are the single source of truth — components are just one possible consumer.
-          The same token set can generate Tailwind CSS, vanilla CSS custom properties, DTCG JSON, or any
-          other format your stack requires.
+          The canonical stack is <strong className="text-fg-default">React 19 + TypeScript + Vite + Tailwind v4 + Shadcn/ui + Radix UI</strong>.
+          Tokens are the single source of truth — components consume them through generated CSS variables and
+          <code className="font-mono text-code-sm bg-bg-subtle px-pad-sm rounded-radius-sm">tv()</code> classes.
+          The DS is opinionated for data-dense interfaces (large tables, multi-step forms, kanbans, filters, modals).
         </p>
       </div>
 
@@ -47,8 +48,8 @@ export function IntroductionDoc() {
             desc: "Every visual decision (color, spacing, radius, shadow) starts as a token. Components consume tokens via CSS variables — never hardcoded values.",
           },
           {
-            title: "Stack-agnostic",
-            desc: "Tokens are plain TypeScript objects. Transforms generate output for Tailwind v4, CSS vars, or DTCG JSON. Shadcn and Tailwind are adapters, not the foundation.",
+            title: "Focused on data-dense SaaS",
+            desc: "Built for admin panels, CRM, dashboards. Optimized for large tables, multi-step forms, kanbans, complex filters, and modal flows — not for marketing sites.",
           },
           {
             title: "Anti-collision prefixes",

@@ -90,13 +90,13 @@ export function TokensOverviewDoc() {
       <div className="flex flex-col gap-gp-2xl mb-14">
         <p className="text-paragraph-sm text-fg-muted">
           Tokens são a única fonte de verdade do visual. Cada cor, spacing, radius, shadow e tipografia é
-          declarada uma vez em um arquivo TypeScript. Transforms geram CSS variables, classes Tailwind v4, e
-          formatos externos (DTCG JSON, vanilla CSS) — todos derivados do mesmo objeto fonte.
+          declarada uma vez em um arquivo TypeScript. O transform principal gera o tema Tailwind v4 — toda
+          mudança em um token atualiza automaticamente cada classe consumida pelos componentes.
         </p>
         <div className="grid grid-cols-2 gap-gp-2xl">
           {[
-            { title: "Stack-agnostic", desc: "Tokens são TypeScript puro. Tailwind, Shadcn e o app são consumers — não a fundação." },
             { title: "Single source of truth", desc: "Mudar um valor em spacing.ts atualiza toda classe gerada após npm run tokens:tw4." },
+            { title: "Designed for SaaS density", desc: "Escalas otimizadas pra admin panels: form heights min 28-44px, gap/pad por categoria, tipografia com presets composições rem + clamp." },
             { title: "Multi-brand ready", desc: "tokens/brands/default/ pode ser duplicado para outras marcas mantendo o mesmo contrato." },
             { title: "Reversible", desc: "Tokens em git. Auditoria de mudança é git log/blame — sem mistério." },
           ].map((p) => (

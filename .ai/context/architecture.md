@@ -121,7 +121,7 @@ transforms/
 ├── to-tailwind-v4.ts              ← CSS @theme tokens (produção)
 ├── to-css-vars.ts                 ← globals.css com CSS Custom Properties
 ├── to-js-theme.ts                 ← theme object
-└── to-dtcg.ts                     ← .tokens.json DTCG (Figma, Tokens Studio)
+└── to-dtcg.ts                     ← .tokens.json para Figma
 ```
 
 ---

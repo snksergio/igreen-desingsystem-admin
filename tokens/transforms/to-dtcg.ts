@@ -1,9 +1,8 @@
 /**
- * to-dtcg.ts — Transform adapter: tokens → DTCG 2025.10 JSON
+ * to-dtcg.ts — Transform: tokens iGreen → JSON para importação no Figma
  *
- * Gera .tokens.json compatível com:
- *   - Figma Variables (via Tokens Studio)
- *   - Penpot, Supernova, Style Dictionary v4+
+ * Gera .tokens.json estruturado, importável pelos plugins de Figma que
+ * trabalham com variables/tokens.
  *
  * Uso:
  *   npx tsx tokens/transforms/to-dtcg.ts > tokens.tokens.json

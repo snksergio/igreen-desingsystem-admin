@@ -1,20 +1,57 @@
 # iGreen Design System
 
-Token-first. Stack-agnostic. Agent-ready.
+Design system interno da iGreen para SaaS CRM, painéis admin e dashboards.
 
 ---
 
-## Filosofia
+## O que é
 
-Este design system foi estruturado para funcionar com **ou sem** Tailwind, **com ou sem** Shadcn.
-Tailwind e Shadcn são adapters opcionais na camada `transforms/`, não a fundação.
+Biblioteca de componentes, tokens e padrões usada pelas plataformas internas da iGreen — admin do CRM, dashboards operacionais, painéis de licenciamento e demais interfaces administrativas.
 
-A arquitetura segue o padrão de mercado de 2025 (Material 3, Carbon IBM, Adobe Spectrum, DTCG 2025.10):
-três tiers de tokens + camada de transformação plugável.
+Stack canônica: **React 19 + TypeScript + Vite + Tailwind CSS v4 + Shadcn/ui + Radix UI**. Tailwind v4 e Shadcn são dependências diretas (não adapters opcionais) — todos os componentes são distribuídos com classes Tailwind nativas e padrões Shadcn.
 
 ---
 
-## Estrutura de 3 tiers
+## Para quem é
+
+- Telas administrativas (CRM, ERP-like, BPM)
+- Dashboards operacionais e analíticos
+- Painéis internos de licenciados e parceiros
+- Qualquer aplicação iGreen que precise de consistência visual e padrão de interação
+
+Não é um DS público nem genérico. É opinionado para SaaS densos de dados — tabelas grandes, formulários complexos, filtros, kanbans, modais multi-step.
+
+---
+
+## Stack
+
+| Camada | Tech |
+|---|---|
+| Framework | React 19 + Vite 6 |
+| Linguagem | TypeScript 5.6 |
+| Styling | Tailwind CSS v4 (@theme) |
+| Variants | `tailwind-variants` via `@/utils/tv` |
+| Primitives | Shadcn/ui + Radix UI |
+| Ícones | Lucide Icons |
+| Fonte | Geist |
+| Dnd | `@dnd-kit` (Kanban) |
+| Virtualização | `@tanstack/react-virtual` |
+| Tabelas/charts | Recharts |
+| Testes | Vitest |
+
+---
+
+## O que tem dentro
+
+- **17 componentes iGreen** custom em `src/components/ui/` (Button, Chip, Avatar, AppShell, Header, MenuSidebar, Modal, AlertModal, FloatingPanel, Panel, PageHeader, FormField, Kanban, Table, TableToolbar, FooterTable, TabelaTeste)
+- **21 componentes Shadcn** adaptados em `src/components/shadcn/` (Badge, Input, Select, Tabs, Card, Switch, Checkbox, RadioGroup, Slider, Progress, Dialog, DropdownMenu, Tooltip, Calendar, etc.)
+- **3 tiers de tokens** em `tokens/brands/default/` (primitives → semantic → component)
+- **Pipeline de AI** com 4 agentes em `.claude/agents/` (Claude Code) espelhado em `.cursor/rules/`
+- **Preview app navegável** com docs vivas em `npm run dev`
+
+---
+
+## Arquitetura de tokens
 
 ```
 tokens/brands/default/
@@ -22,92 +59,164 @@ tokens/brands/default/
 ├── primitives/          Tier 1 — valores raw (API privada)
 │   ├── color-palette    Escalas OKLCH: brand, neutral, feedback, alpha
 │   ├── scales           Escala espacial: sp(n) = n × 4px
-│   ├── fonts            Escala tipográfica: BASE=16, ratio=1.25 (major third)
+│   ├── fonts            Escala tipográfica: BASE=16, ratio=1.25
 │   └── motion           Duração + easing
 │
-├── semantic/            Tier 2 — intenção (API pública)
+├── semantic/            Tier 2 — intenção (API pública via CSS vars)
 │   ├── color-light      bg.*, fg.*, border.*, ring.*, overlay.*
 │   ├── color-dark       Mesmo contrato, valores dark
-│   ├── spacing          space, gap, pad, inset, stack, inline
-│   ├── sizing           componentHeight, formHeight, contentGap, iconSize, avatarSize, containerWidth
-│   ├── shape            radius.*, borderWidth.*, outline, divider
-│   ├── elevation        shadow.light/dark, opacity, blur
-│   └── typography       Presets compostos (rem + clamp): display → label → code
+│   ├── spacing          space (sp-), gap (gp-), pad (pad-)
+│   ├── sizing           comp.* (form, icon, layout, container)
+│   ├── shape            radius.* + borderWidth
+│   ├── elevation        shadow.* (light/dark), opacity, blur
+│   └── typography       Presets compostos (rem + clamp): display, heading, title, label, paragraph, code
 │
-└── transforms/          Adapters plugáveis (não fazem parte dos tokens)
-    ├── to-css-vars      → CSS Custom Properties (sem framework)
-    ├── to-tailwind      → tailwind.config v3 + tw-merge-config
-    ├── to-tailwind-v4   → CSS @theme tokens (Tailwind v4)
-    ├── to-js-theme      → theme object (styled-components, Emotion)
-    └── to-dtcg          → .tokens.json (Figma, Tokens Studio, Penpot)
+└── components/          Tier 2.5 — escalas componente-específicas
+    ├── sizing           form.*, icon.*, layout.*, container.*
+    └── spacing          padCard.*, padPage.*
 ```
+
+**Componentes consomem semantic via CSS vars geradas pelo transform** — nunca importam primitives diretamente.
 
 ---
 
-## Setup por stack
+## Setup
 
-### Sem Tailwind (CSS puro / Next.js / Astro)
+Requisitos: Node 20+, npm 10+ (ou pnpm/yarn).
+
 ```bash
-npx ts-node tokens/transforms/to-css-vars.ts > src/styles/tokens.css
-```
-Importar `tokens.css` no `layout.tsx` ou `globals.css`.
-Usar classes como `var(--color-bg-surface)`.
+# 1. Clone
+git clone https://github.com/snksergio/igreen-desingsystem-admin.git
+cd igreen-desingsystem-admin
 
-### Com Tailwind v3
-```typescript
-// tailwind.config.ts
-import { buildTailwindTheme } from "@igreen/design-system/transforms/tailwind";
-export default { theme: { extend: buildTailwindTheme() } };
-```
+# 2. Install
+npm install
 
-### Com Tailwind v4
-```css
-/* globals.css */
-@import "./tokens.css";  /* gerado por to-css-vars */
-@import "tailwindcss";
-@theme {
-  --color-bg-surface: var(--color-bg-surface);
-  /* ... registrar vars como tokens Tailwind */
-}
+# 3. Gerar o tema Tailwind v4
+npm run tokens:tw4
+
+# 4. Subir o preview
+npm run dev
+# → http://localhost:3100
 ```
 
-### Com styled-components / Emotion
-```typescript
-import { lightTheme, darkTheme } from "@igreen/design-system/transforms/js-theme";
-// <ThemeProvider theme={isDark ? darkTheme : lightTheme}>
-```
+`npm run dev` regenera o tema automaticamente antes do Vite.
 
-### Exportar para Figma
-```bash
-npx ts-node tokens/transforms/to-dtcg.ts > tokens.tokens.json
-# Importar no Tokens Studio (Figma plugin)
-```
+### Scripts
+
+| Comando | Função |
+|---|---|
+| `npm run dev` | Tokens + dev server (porta 3100) |
+| `npm run build` | Tokens + tsc + vite build |
+| `npm run preview` | Servir o build local |
+| `npm run tokens:tw4` | Regenerar `tailwind-theme.css` |
+| `npm run tokens:check` | `tsc --noEmit` nos tokens |
+| `npm test` | Rodar Vitest |
+| `npm run sync:agents` | Espelhar `.claude/agents/` em `.cursor/rules/` |
 
 ---
 
-## Agentes de IA
+## Anti-collision prefixes
 
-Configurados em `.claude/agents/` (Claude Code) e `.cursor/rules/` (Cursor).
+Tokens DS usam prefixos para não colidir com utilities nativas do Tailwind:
+
+| Token | Classe DS | Em vez de |
+|---|---|---|
+| gap | `gap-gp-md` | `gap-4` |
+| spacing | `p-sp-md` | `p-4` |
+| pad | `px-pad-lg` | `px-3` |
+| radius | `rounded-radius-base` | `rounded-lg` |
+| shadow | `shadow-sh-md` | `shadow-md` |
+| form height | `min-h-form-lg` (40px) | `h-10` |
+| icon | `size-icon-md` (20px) | `size-5` |
+| container | `max-w-container-md` | `max-w-md` |
+
+---
+
+## AI Pipeline
+
+Pipeline de 4 agentes configurado em `.claude/agents/` (Claude Code) e espelhado em `.cursor/rules/` (Cursor).
 
 | Agente | Responsabilidade | Modelo |
-|--------|-----------------|--------|
-| `orchestrator` | Classifica e delega | Sonnet |
-| `ds-designer` | Especifica tokens e componentes | Sonnet |
-| `ds-dev` | Implementa tokens e componentes | Opus |
-| `ds-reviewer` | Valida antes do merge | Sonnet |
+|---|---|---|
+| `orchestrator` | Classifica a tarefa e delega | Sonnet |
+| `ds-designer` | Especifica tokens e componentes (com gate) | Sonnet |
+| `ds-dev` | Implementa a spec aprovada | Opus |
+| `ds-reviewer` | Valida antes do merge (regression sweep + critique genuína) | Sonnet |
 
-Slash commands: `/add-token`, `/create-component`, `/extract-figma`
+**Slash commands disponíveis:** `/ds-add-token`, `/ds-create-component`, `/ds-create-composite`, `/ds-add-shadcn`, `/ds-extract-figma`
 
-### Component styles
+A infraestrutura inclui:
+- **Skills** atômicas por agente (`.claude/skills/`)
+- **Hooks** PreToolUse/PostToolUse (`format-on-save`, `block-rm-rf`, `block-sensitive-edit`)
+- **Output style** terse aplicado a toda sessão
+- **MCP servers** (Figma, filesystem, chrome-devtools)
+- **Memory system 4 camadas** (user, project, audit log, lessons L-001..L-014)
 
-Componentes usam **Tailwind Variants** (`tv()`) para mapear variantes e estados em classes Tailwind.
-Arquivo `*.styles.ts` exporta a função `tv()` configurada; o `.tsx` consome via `buttonVariants({ variant, size })`.
+Detalhes no preview app → seções **Agents** e **Pipeline Infra**.
 
 ---
 
-## Referências
+## Component styles
 
-- [DTCG 2025.10](https://www.designtokens.org/tr/drafts/format/) — formato de tokens
-- [Material Design 3](https://m3.material.io/foundations/design-tokens) — sistema de tokens
-- [Carbon Design System](https://carbondesignsystem.com/) — nomenclatura e hierarquia
-- [WCAG 2.5.5](https://www.w3.org/WAI/WCAG21/Understanding/target-size.html) — touch targets
+Componentes iGreen seguem o padrão `tv()` do `tailwind-variants`. Cada componente tem 5 arquivos:
+
+```
+src/components/ui/Nome/
+├── nome.tsx              # markup — zero hardcode
+├── nome.styles.ts        # tv() — fonte de verdade visual
+├── nome.types.ts         # VariantProps
+├── index.ts              # barrel export
+└── USAGE.md              # documentação por componente (atalho IA)
+```
+
+Mudar o visual = mudar **só** o `.styles.ts`. Componentes Shadcn ficam em `src/components/shadcn/` com a lógica Radix preservada e classes substituídas por tokens DS.
+
+---
+
+## Estrutura do repositório
+
+```
+├── tokens/              Tokens + transforms
+├── src/
+│   ├── components/ui/   Componentes iGreen (tv)
+│   ├── components/shadcn/  Componentes Shadcn adaptados
+│   ├── styles/theme/    CSS gerado pelo transform
+│   ├── preview/         Doc pages (app navegável)
+│   └── utils/           tv(), cn()
+├── .claude/             Pipeline orchestration (agents, skills, hooks, rules)
+├── .ai/                 Contexto técnico + audit log + lessons
+├── memory/              Memória project-level
+├── CLAUDE.md            Regras carregadas em toda sessão Claude
+└── README-PIPELINE-WORKFLOW.md   Guia humano detalhado do pipeline
+```
+
+---
+
+## Acessibilidade
+
+- WCAG 2.5.5 — touch targets ≥ 44px (`min-h-form-xl`)
+- Focus rings visíveis com `ring-ring-{color}` (cor por variant, nunca no base)
+- Tokens dark com hierarquia crescente e shadows/rings amplificados
+
+---
+
+## Documentação completa
+
+```bash
+npm run dev
+```
+
+A preview app cobre:
+- **Get Started** — Introduction, Structure, Installation, Transform Tokens
+- **Agents** — Overview, Pipeline (estrutural + simulador), 4 agentes individuais
+- **Pipeline Infra** — Skills, Commands, Hooks, Output Styles, MCP Servers, Memory System
+- **Foundations** — Tokens Overview, Color, Typography, Spacing, Sizing, Shape, Elevation, Icons
+- **Components** — 30+ docs com exemplos vivos
+- **Templates & Examples** — AppShell, Showcases, ChatV2, ClientesShowcase, Dashboard
+
+---
+
+## Licença
+
+Uso interno iGreen. Sem distribuição pública.

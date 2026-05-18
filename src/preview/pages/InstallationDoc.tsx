@@ -105,7 +105,7 @@ npm run dev
           <CmdRow cmd="npm run preview" desc="Serve the production build locally" />
           <CmdRow cmd="npm run tokens:tw4" desc="Regenerate Tailwind v4 theme CSS (primary transform)" />
           <CmdRow cmd="npm run tokens:css" desc="Generate vanilla CSS custom properties" />
-          <CmdRow cmd="npm run tokens:dtcg" desc="Generate DTCG JSON (Design Token Community Group)" />
+          <CmdRow cmd="npm run tokens:dtcg" desc="Generate JSON tokens for Figma import" />
           <CmdRow cmd="npm run tokens:all" desc="Run all transforms in sequence" />
           <CmdRow cmd="npm run tokens:check" desc="tsc --noEmit over the tokens/ folder" />
           <CmdRow cmd="npm test" desc="Run the Vitest test suite once" />

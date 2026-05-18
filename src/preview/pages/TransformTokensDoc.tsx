@@ -229,7 +229,7 @@ export function TransformTokensDoc() {
           </div>
           <div className="flex items-start gap-gp-xl py-pad-xl px-pad-3xl border-b border-border-subtle">
             <code className="font-mono text-code-sm text-fg-brand shrink-0 min-w-[220px]">npm run tokens:dtcg</code>
-            <span className="text-paragraph-sm text-fg-muted">Generate DTCG JSON (Design Token Community Group)</span>
+            <span className="text-paragraph-sm text-fg-muted">Generate JSON tokens for Figma import</span>
           </div>
           <div className="flex items-start gap-gp-xl py-pad-xl px-pad-3xl">
             <code className="font-mono text-code-sm text-fg-brand shrink-0 min-w-[220px]">npm run tokens:all</code>
