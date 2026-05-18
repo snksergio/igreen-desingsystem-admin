@@ -55,9 +55,20 @@ npm create @snksergio/design-system
 pnpm create @snksergio/design-system my-app
 yarn create @snksergio/design-system my-app
 
-# Specific version of the CLI
-npm create @snksergio/design-system@0.1.0 my-app
+# Force latest CLI version (bypass npx cache)
+npm create @snksergio/design-system@latest my-app
+
+# Specific version
+npm create @snksergio/design-system@0.1.1 my-app
 ```
+
+## Note about npx cache
+
+`npm create XXX` is sugar for `npx create-XXX`. npx caches downloaded
+packages in `~/AppData/Local/npm-cache/_npx/` and reuses them, even when
+you don't pin a version. After a fresh `npm publish`, you may need to
+explicitly request `@latest` (or a specific version) to bypass cache and
+get the new release.
 
 ## License
 
