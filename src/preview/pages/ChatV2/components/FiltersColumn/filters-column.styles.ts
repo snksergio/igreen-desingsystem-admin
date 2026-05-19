@@ -13,10 +13,10 @@ export const filtersColumnStyles = tv({
       "flex-1 min-h-0 overflow-y-auto py-pad-md flex flex-col items-center gap-gp-sm",
     /** Section wrapper (expandida). */
     section: "flex flex-col gap-gp-2xs",
-    /** Header de section (título all-caps). Usa `subheading-strong-sm` —
-        token DS criado especificamente pra este caso (10px/700/+0.06em). */
+    /** Header de section (título all-caps). Combo: `caption-xs` (10/400)
+        + override `font-bold uppercase tracking-[0.06em]` pra pattern strong. */
     sectionTitle:
-      "px-pad-md pt-pad-2xs pb-pad-2xs text-[10px] font-bold tracking-[0.06em] text-fg-subtle uppercase",
+      "px-pad-md pt-pad-2xs pb-pad-2xs text-caption-xs font-bold tracking-[0.06em] text-fg-subtle uppercase",
     /** Group wrapper (rail) — divider entre grupos. */
     railGroup: "w-full flex flex-col items-center gap-gp-xs px-pad-md",
     /** Modifier de divisor pros grupos não-primeiros (rail). */

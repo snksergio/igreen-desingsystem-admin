@@ -28,30 +28,20 @@ const twMerge = extendTailwindMerge({
     classGroups: {
       "font-size": [
         {
+          // Lista 1:1 com tokens/brands/default/semantic/typography.ts.
+          // Manter sincronizado com src/utils/tv.ts. Ver L-016.
           text: [
-            // Displays
+            // Displays (fluid clamp)
             "display-2xl", "display-xl", "display-lg", "display-md",
-            // Headings
-            "heading-xl", "heading-lg", "heading-md", "heading-sm",
-            "heading-xs", "heading-2xs",
-            // Titles
+            // Headings (xs estático, sm-xl fluid clamp)
+            "heading-xl", "heading-lg", "heading-md", "heading-sm", "heading-xs",
+            // Titles (weight 600 default)
             "title-lg", "title-md", "title-sm",
-            // Labels
-            "label-xl", "label-lg", "label-md", "label-sm", "label-xs",
-            // Paragraphs
-            "paragraph-xl", "paragraph-lg", "paragraph-md",
-            "paragraph-sm", "paragraph-xs",
-            // Body
-            "body-lg", "body-md", "body-sm",
-            "body-lg-medium", "body-md-medium", "body-sm-medium",
-            // Captions
-            "caption-md", "caption-sm",
-            // Subheadings
-            "subheading-md", "subheading-sm",
-            "subheading-xs", "subheading-2xs",
-            // Overlines
-            "overline-md", "overline-sm",
-            // Code
+            // Body (xs/sm = weight 500 interactive; md-2xl = 400 corrido)
+            "body-2xl", "body-xl", "body-lg", "body-md", "body-sm", "body-xs",
+            // Captions (weight 400)
+            "caption-md", "caption-sm", "caption-xs",
+            // Code (mono regular)
             "code-md", "code-sm",
           ],
         },
