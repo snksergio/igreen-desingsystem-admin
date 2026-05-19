@@ -21,10 +21,9 @@ export const conversationListItemStyles = tv({
     /** Preview da última mensagem (ellipsis). */
     preview:
       "text-body-xs font-normal text-fg-muted whitespace-nowrap overflow-hidden text-ellipsis flex-1 min-w-0",
-    /** Badge contador de não lidas — usa `subheading-strong-md` (11px/700) como
-        base e força `font-bold` + `leading-none` inline pra preservar o weight
-        e a centralização vertical do número dentro do círculo (preset DS sozinho
-        usa lineHeight 0.875rem, que descentraliza o conteúdo). */
+    /** Badge contador de não lidas — `caption-xs` (10/400) + override
+        `font-bold leading-none` pra centralizar o número dentro do círculo.
+        Tabular-nums alinha dígitos verticalmente em badges com counters dinâmicos. */
     unread:
       "inline-flex items-center justify-center min-w-[18px] h-[18px] px-[5px] rounded-radius-full bg-bg-brand text-fg-on-brand text-caption-xs font-bold leading-none shrink-0 [font-variant-numeric:tabular-nums]",
     /** Row 3 — canal + tag + ID. */

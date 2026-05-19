@@ -21,8 +21,8 @@ import { Avatar } from "@/components/ui/Avatar";
 | `xs` | 20px   | caption-sm (11px) |
 | `sm` | 24px   | caption-sm (11px) |
 | `md` | 28px   | caption-sm (11px) |
-| `lg` | 32px   | caption-md (13px) |
-| `xl` | 40px   | label-sm (14px)   |
+| `lg` | 32px   | body-sm font-normal (13px) |
+| `xl` | 40px   | body-md font-medium (14px) |
 
 ## Colors
 
