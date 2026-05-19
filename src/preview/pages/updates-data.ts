@@ -46,6 +46,66 @@ export interface ReleaseEntry {
  */
 export const RELEASES: ReleaseEntry[] = [
   {
+    version: "0.4.0",
+    date: "2026-05-19",
+    tag: "preview",
+    title: "Typography rewrite — 6 roles / 23 presets + pre-commit gate",
+    summary:
+      "Reescrita enxuta da tipografia do DS. 32 presets em 8 namespaces → 23 presets em 6 roles (display / heading / title / body / caption / code). Body é o role central — substitui paragraph + label legados. Title default weight passou de 500 → 600 (alinhado com uso real). Override convencional via Tailwind nativo (font-bold/leading-none/tracking-wider). Migração executada em 14 ondas com validação visual e zero regressão. Bug crítico descoberto e fixado durante validação: tailwind-merge removia silenciosamente classes de presets não registrados em tv.ts e lib/utils.ts — lição L-016 + nova skill ds-reviewer/pre-commit-check pra capturar essa classe de sincronia em commits futuros.",
+    changes: [
+      {
+        type: "breaking",
+        items: [
+          "typography.ts — removidos presets `paragraph-*` (6), `label-*` (7), `subheading-*` (6). Consumers externos do package precisam migrar nomes (`paragraph-sm` → `body-md`, `label-sm` → `body-md font-medium`, etc) — tabela de mapeamento completa em .ai/specs/typography-rewrite-2026-05-19.md",
+          "title-sm/md/lg passam de weight 500 → 600 (semibold) default. Consumers que esperavam 500 precisam adicionar `font-medium` override",
+          "caption-md muda significado: era 13/400, agora é 12/400. Quem usava `text-caption-md` esperando 13px precisa migrar para `text-body-sm font-normal`",
+        ],
+      },
+      {
+        type: "added",
+        items: [
+          "Role `body` (6 presets): body-xs (12/500), body-sm (13/500), body-md (14/400), body-lg (16/400), body-xl (18/400), body-2xl (24/400). Substitui paragraph + label legados — overrides de weight via Tailwind nativo (font-bold/semibold/medium/normal)",
+          "Preset caption-xs (10/400) — tier 10px com weight regular, substitui o uso disperso de subheading-strong-sm",
+          "Skill ds-reviewer/pre-commit-check.md — gate amplo invocado antes de commit significativo. Valida: USAGE.md atualizado em todos os componentes UI tocados; DocPages do showcase refletindo mudanças de tokens; sincronia 1:1 tv.ts ↔ lib/utils.ts ↔ typography.ts (L-016); pipeline-state.md com entry CONCLUÍDO; memory pointers; nova lição registrada em ds-standards.md",
+          "Regra 7 em .claude/rules/ds-standards.md: 'Gate de pre-commit obrigatório antes de commit significativo'",
+          "Audit retroativo .ai/audits/typography-inventory-2026-05-18.md (pré-rewrite) e .ai/audits/typography-inventory-2026-05-19.md (pós-Ondas)",
+          "Spec do rewrite .ai/specs/typography-rewrite-2026-05-19.md com tabela completa antigo → novo + decisões",
+          "Lição L-016 — novo preset em typography.ts exige registro 1:1 em src/utils/tv.ts e src/lib/utils.ts (twMergeConfig). Sem isso, tailwind-merge confunde com text-fg-X (color) e remove a classe silenciosamente",
+        ],
+      },
+      {
+        type: "changed",
+        items: [
+          "Escala discreta tipográfica em px: 10/11/12/13/14/16/18/20/24 — eliminados decimais (10.5, 11.5, 12.5, 13.5, 14.5) e órfãos (15, 17, 22, 26) que pulularam ao longo dos componentes",
+          "body-sm (13/500) é agora o body default do projeto — usado em buttons, dropdowns, inputs, table cells. Texto corrido 13px usa `text-body-sm font-normal` (override regular)",
+          "body-xs/sm têm weight default 500 (medium) por serem interactive; body-md+ têm weight default 400 (regular) por serem corridos",
+          "TypographyDoc.tsx reescrita refletindo os 6 roles novos + overview cards por role + seção 'Overrides convencionais' + aviso L-016",
+          ".ai/context/tokens/typography.md atualizado com nova escala + tabela cruzada antigo → novo + regras de override",
+          "src/utils/tv.ts twMergeConfig sincronizado 1:1 com typography.ts (23 presets)",
+          "src/lib/utils.ts extendTailwindMerge (segunda fonte que afeta shadcn cn()) sincronizado 1:1",
+        ],
+      },
+      {
+        type: "improved",
+        items: [
+          "Eliminadas 199 ocorrências de `text-[Npx]` literal em componentes — substituídas por presets DS. 4 exceções justificadas: ícones Unicode (text-[2rem], text-[20px] em ✦/✅) e DocHeader h1 fluid",
+          "TypographyDoc agora tem overview grid com 6 cards (1 por role) explicando tier + weight default + uso típico — facilita onboarding",
+          "USAGE.md de PageHeader, Kanban, Avatar, TableToolbar atualizados com nomes de presets novos",
+          "Comentários internos de label.tsx, FiltersColumn, ConversationListItem limpos de referências a presets legados",
+          "Regra 'antes de commit significativo invocar pre-commit-check' adicionada ao resumo em ds-standards.md",
+          ".claude/skills/ds-dev/release.md Passo 1.5 agora invoca pre-commit-check em vez de greps direto — gate mais amplo cobrindo USAGE/DocPage/memory/sync, não só L-001..L-007",
+        ],
+      },
+      {
+        type: "fixed",
+        items: [
+          "Bug crítico do tailwind-merge — após adicionar `text-body-sm` ao typography.ts mas esquecer de registrar em src/utils/tv.ts, o merge removia a classe silenciosamente. Componentes perdiam font-size/lh/weight/tracking e caíam no default do browser (16px). Sem erro de tsc/build. Detectado via Chrome DevTools MCP inspecionando button.styles.ts. Documentado como L-016 + criada skill pre-commit-check pra prevenir reincidência",
+          "src/lib/utils.ts twMergeConfig estava com nomes legados (paragraph/label/subheading/overline) + entries fantasmas (body-lg-medium etc que não existiam). Sincronizado com typography.ts atual",
+        ],
+      },
+    ],
+  },
+  {
     version: "0.3.1",
     date: "2026-05-19",
     tag: "patch",
