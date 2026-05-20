@@ -1642,6 +1642,22 @@
   - 4 exceções de `text-[Npx]` aceitas: ícones Unicode (`text-[2rem]`, `text-[20px]` ✦/✅) + DocHeader h1 fluid (`text-[2rem]`)
 - Assumption: 23 presets cobrem 100% dos casos de uso reais sem precisar de variantes adicionais. Override via Tailwind nativo é confiável quando `twMergeConfig` está sincronizado com `typography.ts` (L-016).
 
+### 2026-05-20 | DS DEV | DataTable autoFit + persist v4 | CONCLUÍDO
+- Input: usuário reportou (1) tabela com poucas colunas não preenche container (espaço vazio à direita) e (2) "alguns filtros salvam outros não" entre sessões/views
+- Output: duas features novas na DataTable em release v0.5.0 (minor, opt-in zero):
+  1. **AutoFit em 3 layers** (Type Heuristics + Smart Content Sampling via canvas + Flex Distribution). ResizeObserver mantém widths sincronizados. Default `true`. Resize manual continua override.
+  2. **Persistência schema v4** — `filterModel`/`search`/`currentPage` agora persistem como parte do workspace Default. `defaultSnapshotRef` mantém Default congelado quando view custom ativa. `applyDefault` restaura tudo do snapshot.
+- Arquivos novos: `utils/measure-text.ts`, `utils/calculate-column-widths.ts`, `hooks/use-column-auto-width.ts`
+- Arquivos modificados: `data-table.types.ts` (+autoFit), `data-table.tsx`, `hooks/use-data-table-{controller,columns,search,pagination}.ts`, `hooks/state-persistence-utils.ts` (+v4)
+- Inspirado em padrão analisado em `design-tabela/` (referência externa) — replicado approach das 3 layers + ResizeObserver + canvas measure, adaptado pra coexistir com resize manual + persistId existente do iGreen
+- Validação E2E via Chrome DevTools MCP:
+  - Example: CRUD com 12 colunas → containerWidth (2208) === scrollWidth (2208), overflow 0px
+  - Filter search="maria" → persistido v4 → reload → input restaurou
+  - Aplicou view "Ativos" → snapshot Default preservou search="maria"
+  - Voltou Default → restaurou search="maria"
+- Lições novas: nenhuma — toda lógica reutiliza patterns existentes (persistId, defaultSnapshotRef, ResizeObserver). Nenhum bug arquitetural novo.
+- Assumption: ResizeObserver + canvas measureText têm custo aceitável em runtime (medido em arquivos com até 50 rows × 12 colunas sem percepção de lag). Para tabelas gigantes (10k rows com virtualization), Layer 2 amostra primeiras 20 rows apenas — custo independe do total de rows.
+
 ---
 
 ## Índice de decisões arquiteturais

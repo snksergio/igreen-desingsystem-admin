@@ -5,6 +5,8 @@ export type UseDataTablePaginationParams = {
   paginationModel?: PaginationModel;
   onPaginationModelChange?: (model: PaginationModel) => void;
   initialPageSize?: number;
+  /** Página inicial uncontrolled (hidratada do localStorage). Default 1. */
+  initialPage?: number;
   /** Reset page→1 quando esses valores mudarem (ex: filtro, search). */
   resetTriggers?: unknown[];
 };
@@ -25,10 +27,11 @@ export function useDataTablePagination({
   paginationModel: controlledModel,
   onPaginationModelChange,
   initialPageSize = DEFAULT_PAGE_SIZE,
+  initialPage = 1,
   resetTriggers = [],
 }: UseDataTablePaginationParams = {}): UseDataTablePaginationResult {
   const [uncontrolled, setUncontrolled] = useState<PaginationModel>({
-    page: 1,
+    page: initialPage,
     pageSize: initialPageSize,
   });
   const isControlled = controlledModel !== undefined;

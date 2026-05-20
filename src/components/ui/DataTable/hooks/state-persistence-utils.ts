@@ -1,24 +1,40 @@
 import type {
   DataTableViewMode,
+  FilterModel,
   GridRowId,
   SortModel,
 } from "../data-table.types";
 import type { ColumnPinned, TableDensity } from "../../Table";
 
 const STORAGE_PREFIX = "igreen-datatable:";
-const SCHEMA_VERSION = 3; // v3: adicionado viewMode/groupBy/expandedRowIds (Default workspace completo)
+// v4: filterModel/search/currentPage persistem como parte do workspace "Default".
+// Quando uma view custom está ativa, esses campos refletem o snapshot Default
+// (não o state da view), pra preservar o workspace pessoal entre sessões.
+const SCHEMA_VERSION = 4;
 
-/** Subset persistido — exclui filters, search, page (volátil entre sessões). */
+/**
+ * Subset persistido — workspace "Default" completo.
+ *
+ * Quando o user tem uma view custom ativa, esses campos representam o snapshot
+ * do workspace Default (congelado antes da view ser aplicada). Quando o user
+ * volta para Default via `applyDefault`, esse snapshot é restaurado por inteiro.
+ */
 export type PersistedDataTableState = {
   version: number;
   density?: TableDensity;
   /** Multi-sort: array. Migrado de single object pra array em v2. */
   sortModel?: SortModel[] | null;
   pageSize?: number;
+  /** Página atual (1-indexed). Persistido em v4 como parte do workspace Default. */
+  currentPage?: number;
   columnWidths?: Record<string, number>;
   pinnedColumns?: Record<string, ColumnPinned>;
   hiddenColumns?: string[];
   columnOrder?: string[];
+  /** Filtros aplicados. Persistido em v4 como parte do workspace Default. */
+  filterModel?: FilterModel;
+  /** Texto de busca (debounced). Persistido em v4 como parte do workspace Default. */
+  search?: string;
   /** Modo de visualização (table OR kanban). Persistido em v3. */
   viewMode?: DataTableViewMode;
   /** Field de agrupamento (Fase F.4). Persistido em v3. */

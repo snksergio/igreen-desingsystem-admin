@@ -92,7 +92,9 @@ const columns = useMemo<DataTableColumnDef<Client>[]>(() => [
 | **Row grouping** | `groupBy: ["status", "region"]` + (opcional) `groupMode: "free"` |
 | **Row expansion** | `rowExpansion: { renderExpanded: ({ row }) => <Detail row={row} /> }` |
 | **Saved views** | `savedViewsService` (use `savedViewsMockService` em dev) |
-| **State persistence** | `persistKey: "clients-table"` salva sort+filter+visibility+density em localStorage |
+| **State persistence** | `persistId: "clients-table"` — workspace "Default" completo persiste em localStorage (sort, filter, search, page, density, column widths/pin/hide/order, viewMode, groupBy, expanded rows). Quando view custom está ativa, o snapshot da Default fica congelado — voltar para Default restaura tudo intacto. Limpeza manual via `ref.current.resetPersistedState()`. |
+| **Auto-fit das colunas** | `autoFit: true` (default) — observa container via ResizeObserver, mede conteúdo das primeiras N rows (canvas) e distribui espaço sobrando. Override com `col.width` mantém largura fixa. `autoFit={false}` desliga (comportamento legacy). |
+| **Resize manual de colunas** | Default ativo em todas as colunas exceto `type: "actions"` ou `purpose: "selection"`. Drag handle aparece no edge direito do header. Limites hard `60–800px`; respeita `col.minWidth/maxWidth` quando definidos. Para desabilitar em uma coluna específica: `resizable: false`. |
 | **Export** | `toolbar.enableExport: true` + handlers em `onExport` |
 | **Totalizer row** | `totalizers: [{ field: "value", agg: "sum", format: formatBRL }]` |
 | **Keyboard navigation** | Auto — setas, Home/End, PgUp/PgDn no body |
@@ -304,6 +306,58 @@ Customiza os 3 botões do segmented. Default: compact / standard / comfortable.
 - `false` — desabilita o auto-switch (mantém table view em qualquer viewport)
 
 Use `false` em telas onde o card mode não faz sentido (ex: tabela dentro de modal pequeno que já é mobile-friendly de outra forma).
+
+### `autoFit?: boolean` (default `true`)
+
+Auto-distribui as colunas para ocupar todo o container, em 3 camadas:
+
+1. **Type Heuristics** — cada `column.type` tem `defaultWidth` do registry. Se a coluna define `width`, esse vence.
+2. **Smart Content Sampling** — mede o texto do header + primeiras 20 rows via canvas (`measureText`) e ajusta width pra caber o conteúdo. Respeita `col.minWidth` e `col.maxWidth`.
+3. **Flex Distribution** — sobrando espaço no container, distribui entre colunas sem `width` explícito.
+
+Observado via `ResizeObserver` no container — recalcula quando viewport muda.
+
+**Precedência de width:** resize manual (drag pelo user) > autoFit > `col.width` > `typeDef.defaultWidth`.
+
+**Para desligar:** `autoFit={false}` mantém comportamento legacy (cada coluna usa `col.width` ou default fixo; espaço sobrando vira vazio à direita). Resize manual continua disponível em ambos os modos.
+
+```tsx
+// Default — fluid automático
+<DataTable rows={rows} columns={cols} />
+
+// Opt-out
+<DataTable rows={rows} columns={cols} autoFit={false} />
+
+// Coluna fixa dentro de tabela fluid (ex: actions, status com width travado)
+const cols = [
+  { field: "id", width: 80 },          // sempre 80px
+  { field: "name" },                    // expandida pelo autoFit
+  { field: "actions", type: "actions", width: 60 },
+];
+```
+
+### `persistId?: string` (workspace "Default" persistente — schema v4)
+
+Quando definido, **todo** o workspace "Default" é salvo em localStorage:
+
+- `density`, `sortModel`, `pageSize`, `currentPage`
+- `columnWidths` (resize manual), `pinnedColumns`, `hiddenColumns`, `columnOrder`
+- `filterModel`, `search` (texto debounced)
+- `viewMode`, `groupBy`, `expandedRowIds`
+- `lastActiveViewId` — qual view estava aplicada no último uso
+
+**Como views custom interagem com Default:**
+- User filtra/busca/etc → snapshot da Default é atualizado em tempo real
+- User aplica view custom (preset ou saved) → snapshot da Default fica **congelado** (não polui)
+- User volta para Default → `applyDefault` restaura tudo (filter, search, page, etc) do snapshot intacto
+- User precisa **limpar manualmente** (clear search input, remover filtros via UI) para resetar
+
+**Reset programático:**
+```ts
+ref.current?.resetPersistedState();   // remove entry inteira do localStorage
+```
+
+**Schema versionado:** entries antigos (v3 ou menor) são descartados silenciosamente — DataTable cai no comportamento default sem erro. Schema atual `v4`.
 
 ---
 

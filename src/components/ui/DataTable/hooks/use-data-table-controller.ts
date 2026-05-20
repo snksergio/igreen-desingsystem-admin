@@ -12,6 +12,8 @@ import type {
 } from "../data-table.types";
 import type { DataTableContextValue } from "../context/data-table-context";
 import { useDataTableColumns } from "./use-data-table-columns";
+import { useColumnAutoWidth } from "./use-column-auto-width";
+import { SELECTION_COLUMN_WIDTH } from "../../Table";
 import { useDataTableSort } from "./use-data-table-sort";
 import { useDataTablePagination } from "./use-data-table-pagination";
 import { useDataTableSelection } from "./use-data-table-selection";
@@ -49,12 +51,33 @@ export function useDataTableController<T>(
 
   /* ── Hooks SRP ────────────────────────────────────────────────── */
 
+  // Ref ao container que será observado pelo ResizeObserver do auto-fit.
+  // Compartilhado entre `Table.scrollRef` (scroll y/x) e `useColumnAutoWidth`
+  // (medição do contentRect.width). data-table.tsx consome via controller.
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // AutoFit: calcula widths fluidas em 3 layers (type heuristic / canvas measure / flex distribution).
+  // Default true — opt-out via `autoFit: false` em DataTableProps.
+  const autoFitEnabled = props.autoFit !== false;
+  // Selection column (checkbox) é injetada pelo DataTable e não está em props.columns,
+  // mas ocupa 56px no container — desconta do auto-fit pra evitar overflow.
+  const selectionReservedWidth = props.selectionConfig?.enabled
+    ? SELECTION_COLUMN_WIDTH
+    : 0;
+  const { autoWidths } = useColumnAutoWidth(
+    scrollContainerRef,
+    props.columns,
+    props.rows ?? [],
+    { enabled: autoFitEnabled, reservedWidth: selectionReservedWidth },
+  );
+
   const cols = useDataTableColumns({
     columns: props.columns,
     initialWidthOverrides: persistedInitial?.columnWidths,
     initialPinnedOverrides: persistedInitial?.pinnedColumns,
     initialHiddenColumns: persistedInitial?.hiddenColumns,
     initialColumnOrder: persistedInitial?.columnOrder,
+    autoWidths,
   });
 
   const sort = useDataTableSort({
@@ -66,11 +89,16 @@ export function useDataTableController<T>(
   const filters = useDataTableFilters({
     filterModel: props.filterModel,
     onFilterModelChange: props.onFilterModelChange,
+    // Hidrata filtros do workspace Default (v4+). Quando uma view custom estava
+    // ativa no último mount, o effect de restore (linha ~410) aplica a view depois.
+    initialFilterModel: persistedInitial?.filterModel,
   });
 
   const search = useDataTableSearch({
     search: props.search,
     onSearchChange: props.onSearchChange,
+    // Hidrata texto de busca do workspace Default (v4+).
+    initialSearch: persistedInitial?.search,
   });
 
   // Pagination com auto-reset quando filtros/search mudam
@@ -79,6 +107,8 @@ export function useDataTableController<T>(
     onPaginationModelChange: props.onPaginationModelChange,
     initialPageSize:
       persistedInitial?.pageSize ?? props.paginationConfig?.initialPageSize,
+    // Hidrata página atual do workspace Default (v4+).
+    initialPage: persistedInitial?.currentPage,
     resetTriggers: [filters.filterModel.items.length, search.debouncedValue],
   });
 
@@ -273,10 +303,17 @@ export function useDataTableController<T>(
     density: density.density,
     sortModel: sort.sortModels,
     pageSize: pagination.paginationModel.pageSize,
+    // v4 — currentPage/filterModel/search persistem como parte do workspace Default.
+    // O defaultSnapshotRef abaixo só atualiza quando currentViewId === null, ou seja
+    // só "captura" esses valores quando a Default está ativa. Aplicar uma view custom
+    // não polui o Default (o save sempre usa defaultSnapshotRef, não persistedSnapshot).
+    currentPage: pagination.paginationModel.page,
     columnWidths: cols.columnWidths,
     pinnedColumns: cols.pinnedColumns,
     hiddenColumns: Array.from(cols.hiddenColumns),
     columnOrder: cols.columnOrder,
+    filterModel: filters.filterModel,
+    search: search.debouncedValue,
     // Fase v3 — features novas também persistem (workspace completo da Default)
     viewMode,
     groupBy,
@@ -287,10 +324,13 @@ export function useDataTableController<T>(
     density.density,
     sort.sortModels,
     pagination.paginationModel.pageSize,
+    pagination.paginationModel.page,
     cols.columnWidths,
     cols.pinnedColumns,
     cols.hiddenColumns,
     cols.columnOrder,
+    filters.filterModel,
+    search.debouncedValue,
     viewMode,
     groupBy,
     expandedRowIds,
@@ -314,9 +354,26 @@ export function useDataTableController<T>(
     }
   }, [persistedSnapshot, savedViews.currentViewId]);
 
+  // v4 — o que vai pro localStorage é o snapshot Default (sempre intacto, mesmo
+  // quando view custom está ativa) + lastActiveViewId atual. Assim:
+  //  - User filtra → Default snapshot atualiza → save reflete filtros aplicados
+  //  - User aplica view custom → lastActiveViewId muda, mas Default fica congelado
+  //  - User volta pra Default → applyDefault restaura tudo do snapshot
+  // Triggers do useMemo abaixo cobrem o que dispara save: defaultSnapshotRef
+  // atualiza via effect acima, então usamos persistedSnapshot como trigger via
+  // currentViewId (quando muda, queremos salvar imediatamente o novo state).
+  const persistedSnapshotForSave = useMemo(() => {
+    const base = savedViews.currentViewId === null
+      ? persistedSnapshot
+      : { ...defaultSnapshotRef.current, lastActiveViewId: savedViews.currentViewId };
+    return base;
+    // persistedSnapshot já contém todos os campos relevantes; quando view custom
+    // está ativa, usamos o defaultSnapshotRef preservado + view id atual.
+  }, [persistedSnapshot, savedViews.currentViewId]);
+
   useDataTableStatePersistence({
     persistId: props.persistId,
-    state: persistedSnapshot,
+    state: persistedSnapshotForSave,
   });
 
   /**
@@ -450,8 +507,8 @@ export function useDataTableController<T>(
    * Quando `persistId` está presente:
    *  - Lê do `defaultSnapshotRef.current` (mantido em sincronia conforme o
    *    usuário mexia na Default antes de aplicar uma view).
-   *  - Filters/search permanecem voláteis (sempre limpos na transição pra Default,
-   *    porque não persistem no localStorage por design).
+   *  - **v4**: filters/search/currentPage também são restaurados (parte do workspace).
+   *    Pra limpar manualmente, user clica "Limpar filtros" / "Limpar busca" / etc.
    *
    * Quando `persistId` ausente (sem persistence):
    *  - Comportamento legado: zera tudo (Default = empty state).
@@ -471,6 +528,13 @@ export function useDataTableController<T>(
       setViewMode(snapshot.viewMode ?? "table");
       setGroupBy(snapshot.groupBy);
       setExpandedRowIds(snapshot.expandedRowIds ?? []);
+      // v4 — restaura filters/search/page do workspace Default
+      filters.setFilterModel(snapshot.filterModel ?? { items: [], logicOperator: "AND" });
+      search.setInputValue(snapshot.search ?? "");
+      pagination.setPaginationModel({
+        page: snapshot.currentPage ?? 1,
+        pageSize: snapshot.pageSize ?? pagination.paginationModel.pageSize,
+      });
     } else {
       // Sem persistId: comportamento legado (empty state)
       density.setDensity("standard");
@@ -484,12 +548,12 @@ export function useDataTableController<T>(
       setViewMode("table");
       setGroupBy(undefined);
       setExpandedRowIds([]);
+      filters.setFilterModel({ items: [], logicOperator: "AND" });
+      search.setInputValue("");
     }
 
-    // Filters/search são voláteis (sessão) — sempre limpos na transição pra Default
-    filters.setFilterModel({ items: [], logicOperator: "AND" });
     savedViews.setCurrentViewId(null);
-  }, [props.persistId, props.columns, density, sort, filters, cols, setViewMode, setGroupBy, setExpandedRowIds, savedViews]);
+  }, [props.persistId, props.columns, density, sort, filters, search, pagination, cols, setViewMode, setGroupBy, setExpandedRowIds, savedViews]);
 
   /* ── Imperative ref ──────────────────────────────────────────── */
 
@@ -553,6 +617,8 @@ export function useDataTableController<T>(
     isLoading,
     isDataEmpty,
     isNoResults,
+    /** Ref ao scroll container (compartilhado entre Table.scrollRef + useColumnAutoWidth). */
+    scrollContainerRef,
     rowsToRender: effectiveRows,
     /** Todas as rows após filter/search/sort (sem paginate) — usado por totalizers
      *  pra agregar sobre tudo, nao só pagina atual. Em server mode = current page. */
