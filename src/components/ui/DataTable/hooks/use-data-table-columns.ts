@@ -11,6 +11,12 @@ export type UseDataTableColumnsParams<T> = {
   initialPinnedOverrides?: Record<string, ColumnPinned>;
   initialHiddenColumns?: string[];
   initialColumnOrder?: string[];
+  /**
+   * Widths calculados pelo `useColumnAutoWidth` (autoFit). Precedência:
+   * resize manual (`widthOverrides`) > autoFit (`autoWidths`) > col.width > typeDef.defaultWidth.
+   * Quando autoFit está desligado, passe `undefined` ou `{}`.
+   */
+  autoWidths?: Record<string, number>;
 };
 
 export type UseDataTableColumnsResult<T> = {
@@ -52,6 +58,7 @@ export function useDataTableColumns<T>({
   initialPinnedOverrides,
   initialHiddenColumns,
   initialColumnOrder,
+  autoWidths,
 }: UseDataTableColumnsParams<T>): UseDataTableColumnsResult<T> {
   // Width override por field (uncontrolled). Default vem do columnDef.
   const [widthOverrides, setWidthOverrides] = useState<Record<string, number>>(
@@ -83,6 +90,12 @@ export function useDataTableColumns<T>({
 
   // Efetivo: filtra hidden, aplica order, mescla overrides + defaults do registry
   // por tipo (Fase G.2: width/sortable/align/ellipsis vêm do tipo quando não passados).
+  //
+  // Precedência de width (mais alta para mais baixa):
+  //   1. widthOverrides[field] — resize manual (drag pelo user)
+  //   2. autoWidths[field]      — autoFit calculado via ResizeObserver
+  //   3. col.width              — explícito do consumer
+  //   4. typeDef.defaultWidth   — fallback do tipo registrado
   const effectiveColumns = useMemo<DataTableColumnDef<T>[]>(() => {
     const byField = new Map(columns.map((c) => [String(c.field), c]));
     const ordered: DataTableColumnDef<T>[] = [];
@@ -92,13 +105,17 @@ export function useDataTableColumns<T>({
       const typeDef = col.type ? columnTypeRegistry.get(col.type) : undefined;
       ordered.push({
         ...col,
-        width: widthOverrides[field] ?? col.width ?? typeDef?.defaultWidth,
+        width:
+          widthOverrides[field] ??
+          autoWidths?.[field] ??
+          col.width ??
+          typeDef?.defaultWidth,
         sortable: col.sortable ?? typeDef?.defaultSortable,
         pinned: field in pinnedOverrides ? pinnedOverrides[field] : col.pinned,
       });
     }
     return ordered;
-  }, [columns, columnOrder, hiddenColumns, widthOverrides, pinnedOverrides]);
+  }, [columns, columnOrder, hiddenColumns, widthOverrides, pinnedOverrides, autoWidths]);
 
   // Calcula offsets sticky via hook do Table primitivo
   const widthsInput = useMemo(

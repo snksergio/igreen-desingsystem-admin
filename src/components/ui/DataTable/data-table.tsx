@@ -193,6 +193,7 @@ function DataTableInternal<T>(
     isLoading,
     isDataEmpty,
     isNoResults,
+    scrollContainerRef,
     rowsToRender,
     rowsAllPagesProcessed,
     totalAfterFilter,
@@ -745,8 +746,8 @@ function DataTableInternal<T>(
   /* ── Virtualização — Fase F.3 ──────────────────────────────────────
    * Quando props.virtualize, renderiza apenas rows visíveis. Estimate de
    * row height deriva de density (compact=40, standard=56, comfortable=64).
-   * Consumer pode override via props.estimateRowHeight. */
-  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+   * Consumer pode override via props.estimateRowHeight.
+   * scrollContainerRef vem do controller (compartilhado com useColumnAutoWidth). */
   const defaultRowHeight =
     density.density === "compact"
       ? 40

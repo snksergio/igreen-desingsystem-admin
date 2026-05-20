@@ -6,6 +6,8 @@ export type UseDataTableSearchParams = {
   onSearchChange?: (value: string) => void;
   /** Tempo de debounce em ms. Default 500. */
   debounceMs?: number;
+  /** Estado inicial hidratado (de localStorage) — aplicado apenas no mount uncontrolled. */
+  initialSearch?: string;
 };
 
 export type UseDataTableSearchResult = {
@@ -30,11 +32,14 @@ export function useDataTableSearch({
   search: controlledSearch,
   onSearchChange,
   debounceMs = DEFAULT_DEBOUNCE,
+  initialSearch,
 }: UseDataTableSearchParams = {}): UseDataTableSearchResult {
-  const [uncontrolled, setUncontrolled] = useState<string>("");
+  const [uncontrolled, setUncontrolled] = useState<string>(initialSearch ?? "");
   const isControlled = controlledSearch !== undefined;
   const inputValue = isControlled ? controlledSearch : uncontrolled;
 
+  // Quando hidrata do localStorage, debouncedValue já inicia no valor final
+  // pra processor aplicar filtro no primeiro render (sem aguardar debounce).
   const [debouncedValue, setDebouncedValue] = useState<string>(inputValue);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 

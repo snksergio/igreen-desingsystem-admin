@@ -427,6 +427,20 @@ export type DataTableProps<T> = {
   /** Função pra extrair id da row. Default: row.id */
   getRowId?: (row: T) => GridRowId;
 
+  /**
+   * Auto-fit das colunas ao container. Quando true (default), o DataTable
+   * observa o container via ResizeObserver e:
+   *   1) Mede o conteúdo das primeiras N rows (canvas) pra calcular width ideal
+   *   2) Distribui espaço sobrando entre colunas SEM `col.width` explícito
+   *
+   * Colunas com `col.width` definido pelo consumer mantêm largura fixa.
+   * Resize manual pelo usuário sobrescreve o auto-fit (drag "trava" a coluna).
+   *
+   * Para desativar e manter widths estáticos (comportamento legacy), passe `false`.
+   * Default: `true`.
+   */
+  autoFit?: boolean;
+
   /** Toolbar config (default: tudo enabled) */
   toolbar?: DataTableToolbarConfig;
 

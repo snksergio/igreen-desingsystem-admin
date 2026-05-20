@@ -46,6 +46,43 @@ export interface ReleaseEntry {
  */
 export const RELEASES: ReleaseEntry[] = [
   {
+    version: "0.5.0",
+    date: "2026-05-20",
+    tag: "preview",
+    title: "DataTable — fluid auto-fit + persistência completa do workspace Default",
+    summary:
+      "Duas features grandes na DataTable, opt-in zero (default ligado, sem breaking change). (1) Auto-fit de colunas em 3 camadas: type heuristics + canvas measureText nos primeiros 20 rows + distribuição flex do espaço sobrando. ResizeObserver mantém widths sincronizados quando o container muda. Resolve o caso 'tabela com poucas colunas e espaço vazio à direita' que pesava em vários showcases. (2) Persistência completa do workspace Default: filterModel/search/currentPage agora também persistem em localStorage (schema v4) junto com sort/density/widths. Quando user aplica view custom, snapshot da Default fica congelado; voltar para Default restaura tudo intacto. Limpeza só manual.",
+    changes: [
+      {
+        type: "added",
+        items: [
+          "Prop `autoFit?: boolean` em `DataTableProps` — default `true`. Quando ligado, observa o container via ResizeObserver e calcula widths em 3 layers (type defaultWidth, canvas measureText nos primeiros 20 rows, flex distribution do espaço sobrando). Precedência: resize manual > autoFit > col.width > typeDef.defaultWidth. Inspirado em padrões de DataGrids modernos (AG Grid / TanStack) e na referência `design-tabela/` analisada antes do design",
+          "Hook `useColumnAutoWidth` — observa container ref via ResizeObserver, coalesce eventos via rAF, atualiza state apenas quando widths efetivamente mudam (skip re-render)",
+          "Utility `calculateColumnWidths` (3 layers) — exposta para reuso futuro fora do hook",
+          "Utility `measureTextWidth` — canvas singleton (zero overhead em re-uso), fonte default alinhada com body-sm do DS (13px Geist), SSR-safe (retorna 0 sem `document`)",
+          "Schema v4 da persistência DataTable — adiciona `filterModel`, `search`, `currentPage` ao workspace Default persistido em localStorage. Schema antigo (v3) é descartado silenciosamente (não quebra)",
+          "Hidratação de `useDataTableSearch` (`initialSearch`) e `useDataTablePagination` (`initialPage`) — agora aceitam estado inicial vindo do localStorage",
+          "Logic: `persistedSnapshotForSave` usa `defaultSnapshotRef` quando view custom está ativa — view custom NUNCA polui o snapshot Default no localStorage",
+          "`applyDefault` (transição para Default) agora restaura `filterModel`/`search`/`currentPage` do snapshot — workspace pessoal completo intacto",
+        ],
+      },
+      {
+        type: "improved",
+        items: [
+          "DataTable em todas as DocPages/showcases (CRUD, Dashboard, Clientes, etc) agora preenche todo o container — sem espaço vazio à direita. Validado via Chrome DevTools MCP: containerWidth === scrollWidth (overflow 0px) em Example: CRUD e Example: Column types",
+          "Selection column (checkbox 56px) é descontada do cálculo de auto-fit via `reservedWidth` no hook — evita overflow de 56px que apareceria sem o ajuste",
+          "`scrollContainerRef` movido do `data-table.tsx` para o `useDataTableController` — compartilhado entre `Table.scrollRef` (scroll y/x) e `useColumnAutoWidth` (medição contentRect.width). Reduz uma `useRef` duplicada",
+        ],
+      },
+      {
+        type: "fixed",
+        items: [
+          "Comportamento de persistência inconsistente reportado pelo user: \"alguns filtros salvam outros não\". Causa: por design v3, `filterModel/search/page` eram excluídos do save (`/** Subset persistido — exclui filters, search, page (volátil entre sessões). */`). Agora persistem no schema v4 com lógica de Default snapshot que isola do state de views custom",
+        ],
+      },
+    ],
+  },
+  {
     version: "0.4.0",
     date: "2026-05-19",
     tag: "preview",
